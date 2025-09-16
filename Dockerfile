@@ -18,24 +18,18 @@ RUN npm run build
 
 # Stage 2: Production
 FROM node:20-alpine
-
 WORKDIR /app
 
 # Copy only package files
 COPY package*.json ./
-
-# Install only production dependencies
 RUN npm ci --only=production
 
-# Copy built files from builder
+# Copy built files
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/uploads ./uploads
 
-# Expose port
+# Create uploads directory
+RUN mkdir -p uploads
+
 EXPOSE 3000
-
-# Set environment
 ENV NODE_ENV=production
-
-# Start the app
 CMD ["node", "dist/main.js"]
