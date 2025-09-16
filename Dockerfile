@@ -1,5 +1,5 @@
-# Use Node.js 18 LTS
-FROM node:18-alpine
+# Stage 1: Build
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -7,23 +7,35 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including dev)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the NestJS app
 RUN npm run build
 
-# Create uploads directory
-RUN mkdir -p uploads
+# Stage 2: Production
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy only package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/uploads ./uploads
 
 # Expose port
 EXPOSE 3000
 
-# Set environment to production
+# Set environment
 ENV NODE_ENV=production
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Start the app
+CMD ["node", "dist/main.js"]
