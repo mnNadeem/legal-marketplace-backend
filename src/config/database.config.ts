@@ -1,7 +1,9 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
+export const getDatabaseConfig = (
+  configService: ConfigService,
+): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get('DATABASE_HOST'),
   port: configService.get('DATABASE_PORT'),
@@ -9,6 +11,7 @@ export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOp
   password: configService.get('DATABASE_PASSWORD'),
   database: configService.get('DATABASE_NAME'),
   entities: [__dirname + '/../entities/*.entity{.ts,.js}'],
-  synchronize: configService.get('NODE_ENV') === 'development',
+  synchronize: true,
   logging: configService.get('NODE_ENV') === 'development',
+  autoLoadEntities: true,
 });
